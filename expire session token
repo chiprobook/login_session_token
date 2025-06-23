@@ -1,0 +1,16 @@
+def is_authenticated(self, username):
+        conn = sqlite3.connect('session_tokens.db')
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT session_token, expiry FROM Sessions WHERE username = ?', (username,))
+        session_data = cursor.fetchone()
+        conn.close()
+
+        if session_data:
+            session_token, expiry_time = session_data
+            if datetime.datetime.strptime(expiry_time, "%Y-%m-%d %H:%M:%S.%f") > datetime.datetime.now():
+                return True
+            else:
+                self.logout(username)
+                return False
+        return False
