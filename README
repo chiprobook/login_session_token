@@ -1,0 +1,18 @@
+Features
+🔒 Token Generation on Login
+
+⏱️ 30-Minute Expiration Window
+
+✅ Easy Validation & Revocation
+
+🔑 Configurable Secret & Algorithm
+
+📦 Zero External Dependencies (except PyJWT)
+
+Tech Stack
+Python 3.8+
+PyJWT
+
+Installation
+bash
+pip install PyJWT python-dotenv
