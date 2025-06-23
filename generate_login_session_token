@@ -1,0 +1,42 @@
+def check_login(self, e):
+        self.remove_overlay(self.login_page)
+        time.sleep(1)
+        self.username = self.login_username.value
+        self.password = self.login_password.value
+
+        conn = sqlite3.connect('house_agent.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT password FROM logindata WHERE username = ?', (self.username,))
+        stored_password = cursor.fetchone()
+        conn.close()
+
+        if stored_password and bcrypt.checkpw(self.password.encode(), stored_password[0]):
+            self.user_account = True
+            self.loggin = True
+            self.upload = True
+            
+            session_token = self.generate_token()
+            session_expiry = datetime.datetime.now() + datetime.timedelta(minutes=30)
+
+            conn_session = sqlite3.connect('session_tokens.db')
+            cursor_session = conn_session.cursor()
+            expiry_str = session_expiry.strftime("%Y-%m-%d %H:%M:%S")
+
+            cursor_session.execute('INSERT INTO Sessions (username, session_token, expiry) VALUES (?, ?, ?) ON CONFLICT(username) DO UPDATE SET session_token = ?, expiry = ?', 
+               (self.username, session_token, expiry_str, session_token, expiry_str))
+            
+            conn_session.commit()
+            conn_session.close()
+
+            self.session_token = session_token  # Store token in memory for now
+            self.page.username = self.username  # Store globally
+            self.page.session_token = self.session_token  # Store globally
+
+            print(f"✅ Login successful! Session Token stored: {session_token}")
+            self.page.overlay.clear() 
+            self.housing_display()
+        
+            Messagebox(f"✅ Login successful", self.page)
+
+ def generate_token(self):
+        return secrets.token_hex(32)  # Creates a unique token for the session
